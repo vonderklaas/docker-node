@@ -1,0 +1,81 @@
+What we need to run this application?
+
+- Have Node.js
+- Install all Dependencies
+
+Leave a set of instructions for a container,
+to run our application correctly. So we
+need to create a Dockerfile in the root
+of our application
+
+We use Dockerfile to Build an Image (executable file),
+object that will contain all instructions
+and the actual build, which we will use
+to run a Container
+
+### Run this command to build an image
+### -t (tagging an image with the name, for easier access)
+### . (specify the directory where Dockerfile lives)
+
+docker build -t <image-name> .
+
+### In this case: docker build -t nodeapp 
+
+### Check images
+docker images
+
+### Delete image
+docker rmi <IMAGE ID>
+
+### Run container from the image
+### <container name> (we can call container whenever we want)
+docker run --name <container name> <image-name>
+
+### Check containers information
+docker ps
+
+Container is completely separate enviroment than local machine
+It runs on :3000 inside container, not in local machine, it has no idea
+about that separate container environment 
+
+What if we developing and we want to run it in container, and see it in browser,
+for example. So, we need Port Mapping for this (as simple, as adding an aditional flag)
+
+Remove our previous container
+
+docker stop <CONTAINER ID>
+docker container prune (to remove all stopped containers)
+
+### Run new container with Port Mapping
+docker run --name my-nodeapp -p 3000:3000 nodeapp
+
+What if we made a change in our application?
+It is reflecting only on our local environment,
+but how to update container and image?
+
+# Just build an image
+docker build -t <APP NAME>:v2 .
+
+It is quite long to make a change, then stop current container,
+remove it, build new image and run new container and etc. We
+need somehow sync up everything inside local machine with
+anything in container working directory, we going to do it
+using a thing called Volumes
+
+### -v (Volume) bind-mount (sync all stuff in local env with folder in container)
+### It's like Port Mapping but it is folder (directory) mapping
+### We basicly overwriting everything in /usr/src/app 
+docker run --name my-node-app -p 3000:3000 -v $(pwd):/usr/src/app nodeapp
+
+### We can add anonymous volume, like for example: -v 
+
+If we want a bit different instructions for different Docker environments,
+we might use a second Dockerfile file, to specify needed scenario,
+but to make it happen, when we will create a new Image, we need to 
+specify which Dockerfile to look for
+
+### Build image
+docker build -t nodeapp:v3 -f Dockerfile.dev .
+
+### Run container (without name)
+docker run -p 8000:3000 -v $(pwd):/usr/src/app -v /usr/src/app/node_modules nodeapp:v3
